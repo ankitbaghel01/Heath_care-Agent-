@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Healthcare System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 250px;
+            height: 100vh;
+            background: linear-gradient(180deg, #1e3a5f 0%, #0d2137 100%);
+            color: white;
+            padding: 20px 0;
+            z-index: 1000;
+        }
+
+        .sidebar-header {
+            padding: 0 20px 30px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-header h2 {
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-header span {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            display: block;
+            margin-top: 5px;
+        }
+
+        .nav-menu {
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 100px);
+        }
+
+        .nav-item {
+            padding: 15px 25px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: rgba(255,255,255,0.1);
+            border-left-color: #4CAF50;
+        }
+
+        .nav-item.active {
+            background: rgba(76, 175, 80, 0.2);
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 250px;
+            padding: 30px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #1e3a5f;
+            font-size: 1.8rem;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #43a047;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+
+        .btn-danger {
+            background: #f44336;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #d32f2f;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card .icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+
+        .stat-card.blue .icon { background: #e3f2fd; color: #1976d2; }
+        .stat-card.green .icon { background: #e8f5e9; color: #388e3c; }
+        .stat-card.orange .icon { background: #fff3e0; color: #f57c00; }
+        .stat-card.purple .icon { background: #f3e5f5; color: #7b1fa2; }
+        .stat-card.red .icon { background: #ffebee; color: #d32f2f; }
+        .stat-card.teal .icon { background: #e0f2f1; color: #00796b; }
+
+        .stat-card h3 {
+            font-size: 2rem;
+            color: #1e3a5f;
+            margin-bottom: 5px;
+        }
+
+        .stat-card p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* Tables */
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+        }
+
+        .card-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-header h2 {
+            color: #1e3a5f;
+            font-size: 1.2rem;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 10px;
+        }
+
+        .filter-tab {
+            padding: 8px 16px;
+            border: none;
+            background: #f5f5f5;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+        }
+
+        .filter-tab.active, .filter-tab:hover {
+            background: #1e3a5f;
+            color: white;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 15px 20px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #555;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-scheduled {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .status-completed {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+
+        .status-cancelled {
+            background: #ffebee;
+            color: #d32f2f;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s;
+        }
+
+        .action-btn.view {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .action-btn.edit {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .action-btn.delete {
+            background: #ffebee;
+            color: #d32f2f;
+        }
+
+        .action-btn:hover {
+            opacity: 0.8;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            color: #1e3a5f;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        /* Section visibility */
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        /* Loading spinner */
+        .loading {
+            display: flex;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4CAF50;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 15px 25px;
+            background: #333;
+            color: white;
+            border-radius: 8px;
+            display: none;
+            z-index: 3000;
+            animation: slideIn 0.3s ease;
+        }
+
+        .toast.success { background: #4CAF50; }
+        .toast.error { background: #f44336; }
+        .toast.show { display: block; }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 70px;
+                padding: 10px 0;
+            }
+
+            .sidebar-header h2 span,
+            .nav-item span {
+                display: none;
+            }
+
+            .main-content {
+                margin-left: 70px;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>Healthcare Admin</h2>
+            <span>Management Portal</span>
+        </div>
+        <div class="nav-menu">
+            <div class="nav-item active" onclick="showSection('dashboard')">
+                <span>Dashboard</span>
+            </div>
+            <div class="nav-item" onclick="showSection('appointments')">
+                <span>Appointments</span>
+            </div>
+            <div class="nav-item" onclick="showSection('patients')">
+                <span>Patients</span>
+            </div>
+            <div class="nav-item" onclick="window.location.href='/'">
+                <span>Back to Chat</span>
+            </div>
+            <div class="nav-item" onclick="window.location.href='/admin/logout'" style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.1); color: #ff6b6b;">
+                <span>Logout</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Dashboard Section -->
+        <div id="dashboard-section" class="section active">
+            <div class="header">
+                <h1>Dashboard Overview</h1>
+                <div class="header-actions">
+                    <button class="btn btn-secondary" onclick="loadDashboard()">Refresh</button>
+                </div>
+            </div>
+
+            <div class="stats-grid" id="stats-grid">
+                <div class="stat-card blue">
+                    <div class="icon">📊</div>
+                    <h3 id="total-appointments">-</h3>
+                    <p>Total Appointments</p>
+                </div>
+                <div class="stat-card green">
+                    <div class="icon">📅</div>
+                    <h3 id="scheduled-appointments">-</h3>
+                    <p>Scheduled</p>
+                </div>
+                <div class="stat-card purple">
+                    <div class="icon">✅</div>
+                    <h3 id="completed-appointments">-</h3>
+                    <p>Completed</p>
+                </div>
+                <div class="stat-card red">
+                    <div class="icon">❌</div>
+                    <h3 id="cancelled-appointments">-</h3>
+                    <p>Cancelled</p>
+                </div>
+                <div class="stat-card teal">
+                    <div class="icon">👥</div>
+                    <h3 id="total-patients">-</h3>
+                    <p>Total Patients</p>
+                </div>
+                <div class="stat-card orange">
+                    <div class="icon">📆</div>
+                    <h3 id="today-appointments">-</h3>
+                    <p>Today's Appointments</p>
+                </div>
+            </div>
+
+            <!-- Recent Appointments -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>Recent Appointments</h2>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Patient</th>
+                                <th>Doctor</th>
+                                <th>Date & Time</th>
+                                <th>Problem</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recent-appointments-table">
+                            <tr>
+                                <td colspan="5" class="loading"><div class="spinner"></div></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Appointments Section -->
+        <div id="appointments-section" class="section">
+            <div class="header">
+                <h1>Manage Appointments</h1>
+                <div class="header-actions">
+                    <button class="btn btn-secondary" onclick="loadAppointments()">Refresh</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2>All Appointments</h2>
+                    <div class="filter-tabs">
+                        <button class="filter-tab active" onclick="filterAppointments(null, this)">All</button>
+                        <button class="filter-tab" onclick="filterAppointments('scheduled', this)">Scheduled</button>
+                        <button class="filter-tab" onclick="filterAppointments('completed', this)">Completed</button>
+                        <button class="filter-tab" onclick="filterAppointments('cancelled', this)">Cancelled</button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Patient Name</th>
+                                <th>Phone</th>
+                                <th>Age/Gender</th>
+                                <th>Doctor</th>
+                                <th>Date & Time</th>
+                                <th>Problem</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="appointments-table">
+                            <tr>
+                                <td colspan="8" class="loading"><div class="spinner"></div></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Patients Section -->
+        <div id="patients-section" class="section">
+            <div class="header">
+                <h1>Patient Records</h1>
+                <div class="header-actions">
+                    <button class="btn btn-secondary" onclick="loadPatients()">Refresh</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2>All Patients</h2>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Age</th>
+                                <th>Gender</th>
+                                <th>Phone</th>
+                                <th>Total Appointments</th>
+                                <th>Registered On</th>
+                            </tr>
+                        </thead>
+                        <tbody id="patients-table">
+                            <tr>
+                                <td colspan="6" class="loading"><div class="spinner"></div></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal-overlay" id="edit-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Edit Appointment</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="edit-appointment-id">
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="edit-status">
+                        <option value="scheduled">Scheduled</option>
+                        <option value="completed">Completed</option>
+                        <option value="cancelled">Cancelled</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="text" id="edit-date" placeholder="DD-MM-YYYY">
+                </div>
+                <div class="form-group">
+                    <label>Time Slot</label>
+                    <select id="edit-time">
+                        <option value="09:00 AM">09:00 AM</option>
+                        <option value="10:00 AM">10:00 AM</option>
+                        <option value="11:00 AM">11:00 AM</option>
+                        <option value="12:00 PM">12:00 PM</option>
+                        <option value="02:00 PM">02:00 PM</option>
+                        <option value="03:00 PM">03:00 PM</option>
+                        <option value="04:00 PM">04:00 PM</option>
+                        <option value="05:00 PM">05:00 PM</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Doctor Name</label>
+                    <input type="text" id="edit-doctor">
+                </div>
+                <div class="form-group">
+                    <label>Notes</label>
+                    <textarea id="edit-notes" rows="3" placeholder="Add any notes..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveAppointment()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // Global state
+        let currentAppointments = [];
+        let currentFilter = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDashboard();
+        });
+
+        // Section Navigation
+        function showSection(section) {
+            // Update nav items
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            event.target.closest('.nav-item').classList.add('active');
+
+            // Show section
+            document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+            document.getElementById(`${section}-section`).classList.add('active');
+
+            // Load data
+            if (section === 'dashboard') loadDashboard();
+            else if (section === 'appointments') loadAppointments();
+            else if (section === 'patients') loadPatients();
+        }
+
+        // Load Dashboard
+        async function loadDashboard() {
+            try {
+                // Load stats
+                const statsRes = await fetch('/api/admin/stats');
+                const stats = await statsRes.json();
+
+                document.getElementById('total-appointments').textContent = stats.total_appointments;
+                document.getElementById('scheduled-appointments').textContent = stats.scheduled;
+                document.getElementById('completed-appointments').textContent = stats.completed;
+                document.getElementById('cancelled-appointments').textContent = stats.cancelled;
+                document.getElementById('total-patients').textContent = stats.total_patients;
+                document.getElementById('today-appointments').textContent = stats.today_appointments;
+
+                // Load recent appointments
+                const appointmentsRes = await fetch('/api/admin/appointments?limit=5');
+                const appointments = await appointmentsRes.json();
+
+                const tbody = document.getElementById('recent-appointments-table');
+                if (appointments.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><h3>No appointments yet</h3><p>Appointments will appear here once patients book them.</p></td></tr>';
+                } else {
+                    tbody.innerHTML = appointments.map(apt => `
+                        <tr>
+                            <td><strong>${apt.patient_name || 'Unknown'}</strong></td>
+                            <td>${apt.doctor_name || 'N/A'}</td>
+                            <td>${apt.appointment_date} at ${apt.time_slot}</td>
+                            <td>${truncateText(apt.problem, 30)}</td>
+                            <td><span class="status-badge status-${apt.status}">${apt.status}</span></td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+                showToast('Failed to load dashboard', 'error');
+            }
+        }
+
+        // Load Appointments
+        async function loadAppointments(status = null) {
+            try {
+                const url = status ? `/api/admin/appointments?status=${status}` : '/api/admin/appointments';
+                const res = await fetch(url);
+                currentAppointments = await res.json();
+
+                renderAppointmentsTable();
+            } catch (error) {
+                console.error('Error loading appointments:', error);
+                showToast('Failed to load appointments', 'error');
+            }
+        }
+
+        function renderAppointmentsTable() {
+            const tbody = document.getElementById('appointments-table');
+
+            if (currentAppointments.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="empty-state"><h3>No appointments found</h3></td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = currentAppointments.map(apt => `
+                <tr>
+                    <td><strong>${apt.patient_name || 'Unknown'}</strong></td>
+                    <td>${apt.patient_phone || 'N/A'}</td>
+                    <td>${apt.patient_age || 'N/A'} / ${apt.patient_gender || 'N/A'}</td>
+                    <td>${apt.doctor_name || 'N/A'}<br><small style="color:#666">${apt.doctor_specialty || ''}</small></td>
+                    <td>${apt.appointment_date}<br><small>${apt.time_slot}</small></td>
+                    <td>${truncateText(apt.problem, 25)}</td>
+                    <td><span class="status-badge status-${apt.status}">${apt.status}</span></td>
+                    <td>
+                        <div class="action-btns">
+                            <button class="action-btn edit" onclick='openEditModal(${JSON.stringify(apt)})'>Edit</button>
+                            <button class="action-btn delete" onclick="deleteAppointment('${apt._id}')">Delete</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function filterAppointments(status, btn) {
+            // Update active tab
+            document.querySelectorAll('.filter-tab').forEach(tab => tab.classList.remove('active'));
+            btn.classList.add('active');
+
+            currentFilter = status;
+            loadAppointments(status);
+        }
+
+        // Load Patients
+        async function loadPatients() {
+            try {
+                const res = await fetch('/api/admin/patients');
+                const patients = await res.json();
+
+                const tbody = document.getElementById('patients-table');
+
+                if (patients.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="empty-state"><h3>No patients yet</h3></td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = patients.map(patient => `
+                    <tr>
+                        <td><strong>${patient.name}</strong></td>
+                        <td>${patient.age || 'N/A'}</td>
+                        <td>${patient.gender || 'N/A'}</td>
+                        <td>${patient.phone || 'N/A'}</td>
+                        <td>${patient.appointment_count} appointments</td>
+                        <td>${formatDate(patient.created_at)}</td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading patients:', error);
+                showToast('Failed to load patients', 'error');
+            }
+        }
+
+        // Modal Functions
+        function openEditModal(appointment) {
+            document.getElementById('edit-appointment-id').value = appointment._id;
+            document.getElementById('edit-status').value = appointment.status;
+            document.getElementById('edit-date').value = appointment.appointment_date;
+            document.getElementById('edit-time').value = appointment.time_slot;
+            document.getElementById('edit-doctor').value = appointment.doctor_name || '';
+            document.getElementById('edit-notes').value = appointment.notes || '';
+
+            document.getElementById('edit-modal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('edit-modal').classList.remove('active');
+        }
+
+        async function saveAppointment() {
+            const id = document.getElementById('edit-appointment-id').value;
+            const data = {
+                status: document.getElementById('edit-status').value,
+                appointment_date: document.getElementById('edit-date').value,
+                time_slot: document.getElementById('edit-time').value,
+                doctor_name: document.getElementById('edit-doctor').value,
+                notes: document.getElementById('edit-notes').value
+            };
+
+            try {
+                const res = await fetch(`/api/admin/appointments/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await res.json();
+
+                if (result.success) {
+                    showToast('Appointment updated successfully!', 'success');
+                    closeModal();
+                    loadAppointments(currentFilter);
+                    loadDashboard();
+                } else {
+                    showToast('Failed to update appointment', 'error');
+                }
+            } catch (error) {
+                console.error('Error updating appointment:', error);
+                showToast('Error updating appointment', 'error');
+            }
+        }
+
+        async function deleteAppointment(id) {
+            if (!confirm('Are you sure you want to delete this appointment?')) return;
+
+            try {
+                const res = await fetch(`/api/admin/appointments/${id}`, {
+                    method: 'DELETE'
+                });
+
+                const result = await res.json();
+
+                if (result.success) {
+                    showToast('Appointment deleted!', 'success');
+                    loadAppointments(currentFilter);
+                    loadDashboard();
+                } else {
+                    showToast('Failed to delete appointment', 'error');
+                }
+            } catch (error) {
+                console.error('Error deleting appointment:', error);
+                showToast('Error deleting appointment', 'error');
+            }
+        }
+
+        // Utility Functions
+        function truncateText(text, maxLength) {
+            if (!text) return 'N/A';
+            return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return 'N/A';
+            try {
+                const date = new Date(dateStr.$date || dateStr);
+                return date.toLocaleDateString('en-IN');
+            } catch {
+                return dateStr;
+            }
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type} show`;
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
