@@ -4,7 +4,7 @@ from bson import ObjectId
 import os
 
 # MongoDB Connection
-MONGO_URI = os.getenv("MONGO_URI", "mongodb+srv://ankitbaghel3816_db_user:Ankit%401234@cluster0.pmvxhuo.mongodb.net/")
+MONGO_URI = os.getenv("MONGO_URI", "")
 client = MongoClient(MONGO_URI)
 db = client["healthcare_chatbot"]
 
